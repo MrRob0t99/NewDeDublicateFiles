@@ -20,18 +20,21 @@ namespace ConsoleApp12
             var stopwatch = new Stopwatch();
             Console.WriteLine("Enter the path to the directory");
             var directory = args != null && args.Length >= 1 ? args[0] : Console.ReadLine();
+            var takeFileTime = new TimeSpan();
+            var filtredFiles = new TimeSpan();
             if (!Directory.Exists(directory))
             {
                 Console.WriteLine("Directory not found");
             }
+            
             else
             {
                 stopwatch.Start();
-                var directoryInfo = new DirectoryInfo(directory);
-                Console.WriteLine("Take all files " + stopwatch.Elapsed);
+                var directoryInfo = new DirectoryInfo(directory);      
                 try
                 {
                     GetAllFileFromDirectory(directoryInfo);
+                    takeFileTime = stopwatch.Elapsed;
                 }
                 catch (UnauthorizedAccessException e)
                 {
@@ -39,8 +42,7 @@ namespace ConsoleApp12
                     Console.WriteLine("Press any key");
                     Console.ReadKey();
                     Environment.Exit(0);
-                }               
-                Console.WriteLine("All files " + _files.Count);
+                }
                 var sorted = _files
                     .AsParallel()
                     .Where(f => _files
@@ -49,9 +51,7 @@ namespace ConsoleApp12
                     .Any())
                     .Select(x => new { x.FullName })
                     .ToList();
-                
-                Console.WriteLine("Filtered files " + stopwatch.Elapsed);
-                Console.WriteLine("Filtered files " + sorted.Count);
+                filtredFiles = stopwatch.Elapsed;
                 _list = new File[sorted.Count];
                 Parallel.For(0, sorted.Count, i =>
                 {
@@ -78,6 +78,9 @@ namespace ConsoleApp12
             }
             Console.WriteLine(_builder);
             stopwatch.Stop();
+            Console.WriteLine("Take all files " + takeFileTime);
+            Console.WriteLine("All files " + _files.Count);
+            Console.WriteLine("Filtered files " + filtredFiles);
             Console.WriteLine("Time without output " + time);
             Console.WriteLine("Time all " + stopwatch.Elapsed);
             Console.ReadKey();
